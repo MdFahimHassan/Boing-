@@ -13,9 +13,9 @@ Boing! is a nostalgic web revival inspired by classic bouncing ball adventures. 
 
 ## 👥 Team Roles
 - **UI/UX (Fahim)**: Menus, HUD, styling, branding.
-- **Game Logic**: Physics, collisions, scoring system.
-- **Level Design**: Maps, obstacles, progression.
-- **Infra/Backend**: Repo setup, CI/CD, hosting, optional save system.
+- **Game Logic (Tamzid)**: Physics, collisions, scoring system.
+- **Level Design (Prithul)**: Maps, obstacles, progression.
+- **Infra/Backend (Shahriar)**: Repo setup, CI/CD, hosting, optional save system.
 
 ---
 

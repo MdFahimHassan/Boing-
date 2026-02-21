@@ -1,0 +1,37 @@
+body {
+  margin: 0;
+  font-family: 'Press Start 2P', cursive; /* Retro pixel font */
+  background: linear-gradient(180deg, #ffcc00, #ff6600);
+  color: #fff;
+  text-align: center;
+}
+
+#start-screen {
+  margin-top: 20%;
+}
+
+button {
+  margin: 10px;
+  padding: 10px 20px;
+  font-size: 16px;
+  background: #222;
+  color: #fff;
+  border: 2px solid #fff;
+  cursor: pointer;
+}
+
+button:hover {
+  background: #444;
+}
+
+#hud {
+  position: fixed;
+  top: 10px;
+  left: 10px;
+  display: flex;
+  gap: 20px;
+}
+
+.hidden {
+  display: none;
+}

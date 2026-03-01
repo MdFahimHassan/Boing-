@@ -88,3 +88,5 @@ fetch("src/levels/level1.json")
   });
 
 Game.start();
+
+window.Game = Game; // expose Game globally

@@ -62,4 +62,29 @@ const Game = {
   }
 };
 
+fetch("src/levels/level1.json")
+  .then(res => res.json())
+  .then(levelData => {
+    console.log("Loaded Level:", levelData);
+
+    // Example: draw tiles
+    for (let y = 0; y < levelData.height; y++) {
+      for (let x = 0; x < levelData.width; x++) {
+        const tile = levelData.tiles[y][x];
+        if (tile === 1) {
+          ctx.fillStyle = "brown"; // ground
+          ctx.fillRect(x * levelData.tileSize, y * levelData.tileSize, levelData.tileSize, levelData.tileSize);
+        }
+        if (tile === 2) {
+          ctx.fillStyle = "blue"; // obstacle
+          ctx.fillRect(x * levelData.tileSize, y * levelData.tileSize, levelData.tileSize, levelData.tileSize);
+        }
+        if (tile === 4) {
+          ctx.fillStyle = "yellow"; // collectible
+          ctx.fillRect(x * levelData.tileSize, y * levelData.tileSize, levelData.tileSize, levelData.tileSize);
+        }
+      }
+    }
+  });
+
 Game.start();

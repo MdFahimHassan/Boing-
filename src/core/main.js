@@ -5,7 +5,7 @@ const Game = {
 
   start() {
     // Load level before starting loop
-    fetch("src/levels/level1.json")
+    fetch("src/levels/level01.json")
       .then(res => res.json())
       .then(levelData => {
         this.level = levelData;

@@ -7,7 +7,15 @@ document.addEventListener("DOMContentLoaded", () => {
     console.log("Game Started!");
     startScreen.classList.add("hidden");
     hud.classList.remove("hidden");
-    // Later: trigger game loop here
+
+    // Load level + start game loop
+    fetch("src/levels/level1.json")
+      .then(res => res.json())
+      .then(levelData => {
+        Game.level = levelData;   // store level data
+        Game.start();             // start the loop
+      })
+      .catch(err => console.error("Error loading level:", err));
   });
 });
 

@@ -1,20 +1,36 @@
+const canvas = document.getElementById("gameCanvas");
+if (!canvas) {
+  console.error("Canvas element not found! Make sure #gameCanvas exists in HTML.");
+}
+const ctx = canvas?.getContext("2d");
+
+// Simple input handler
+const input = {
+  keys: {},
+  isDown(key) {
+    return this.keys[key] || false;
+  }
+};
+
+document.addEventListener("keydown", (e) => {
+  input.keys[e.key] = true;
+});
+
+document.addEventListener("keyup", (e) => {
+  input.keys[e.key] = false;
+});
+
 const Game = {
   lastTime: 0,
   deltaTime: 0,
   level: null, // store level data here
 
   start() {
-    // Load level before starting loop
-    fetch("src/levels/level01.json")
-      .then(res => res.json())
-      .then(levelData => {
-        this.level = levelData;
-        console.log("Loaded Level:", levelData);
-
-        this.lastTime = performance.now();
-        requestAnimationFrame(this.loop.bind(this));
-      })
-      .catch(err => console.error("Error loading level:", err));
+    // Canvas is now visible when game starts
+    canvas.style.display = "block";
+    
+    this.lastTime = performance.now();
+    requestAnimationFrame(this.loop.bind(this));
   },
 
   loop(timestamp) {

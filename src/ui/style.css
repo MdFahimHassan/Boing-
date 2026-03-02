@@ -35,3 +35,11 @@ button:hover {
 .hidden {
   display: none;
 }
+
+#gameCanvas {
+  display: none;
+  border: 2px solid #fff;
+  background: #000;
+  margin: 20px auto;
+}
+}

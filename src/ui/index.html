@@ -6,6 +6,9 @@
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
+  <video autoplay muted loop id="bg-video">
+  <source src="assets/vids/bg-loop.mp4" type="video/mp4">
+  </video>
   <!-- Start Screen -->
   <div id="start-screen">
     <h1>Boing!</h1>
@@ -14,7 +17,7 @@
   </div>
 
   <!-- Game Canvas -->
-  <canvas id="gameCanvas" width="800" height="600" style="display: none;"></canvas>
+  <canvas id="gameCanvas" width="800" height="600"></canvas>
 
   <!-- HUD -->
   <div id="hud" class="hidden">
@@ -22,8 +25,5 @@
     <span id="lives">Lives: 3</span>
     <span id="level">Level: 1</span>
   </div>
-
-  <script src="../core/main.js"></script>
-  <script src="ui.js"></script>
 </body>
-</html>
+</html> 

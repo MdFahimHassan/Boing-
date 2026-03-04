@@ -67,14 +67,18 @@ button {
   margin: 10px;
   padding: 10px 20px;
   font-size: 16px;
-  background: #222;
-  color: #fff;
+  background: #222;       /* default dark background */
+  color: #fff;            /* default white text */
   border: 2px solid #fff;
   cursor: pointer;
+  transition: all 0.3s ease-in-out;
 }
 
 button:hover {
-  background: #444;
+  background: #fff;       /* invert to white background */
+  color: #000;            /* invert text to black */
+  box-shadow: 0 0 12px #982598, 0 0 24px #E491C9; /* purple glow */
+  transform: scale(1.05); /* subtle bounce effect */
 }
 
 /* HUD (Score, Lives, Level) */

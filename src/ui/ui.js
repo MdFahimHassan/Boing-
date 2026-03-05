@@ -11,20 +11,18 @@ function startGameSession() {
   // Show canvas
   canvas.style.display = "block";
 
-  // Load level + start game loop
-  fetch("../levels/level01.json")
-    .then(res => {
-      if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
-      return res.json();
-    })
+  // Load level + start game loop using helper in core
+  Game.loadLevel("../levels/level01.json")
     .then(levelData => {
       console.log("Level loaded successfully:", levelData);
       Game.level = levelData;   // store level data
+      Game.originalTiles = JSON.parse(JSON.stringify(levelData.tiles)); // store original tiles
       Game.start();             // start the loop
     })
     .catch(err => {
-      console.error("Error loading level:", err);
-      alert("Failed to load level: " + err.message);
+      // loadLevel should never reject, but just in case
+      console.error("Unexpected error loading level:", err);
+      alert("Unable to initialize game. See console for details.");
     });
 }
 
@@ -79,11 +77,16 @@ document.addEventListener("DOMContentLoaded", () => {
       alert("Quit to main menu coming soon!");
     });
   }
+
+  // Pause on window minimize
+  document.addEventListener("visibilitychange", () => {
+    Game.paused = document.hidden;
+  });
 });
 
 // Example function to update HUD
 function updateHUD(score, lives, level) {
-  document.getElementById("score").textContent = `Score: ${score}`;
-  document.getElementById("lives").textContent = `Lives: ${lives}`;
-  document.getElementById("level").textContent = `Level: ${level}`;
+  document.getElementById("lives").innerHTML = `<span class="icon">❤️</span> Lives: ${lives}`;
+  document.getElementById("score").innerHTML = `<span class="icon">⭐</span> Score: ${score}`;
+  document.getElementById("level").innerHTML = `<span class="icon">🏆</span> Level: ${level}`;
 }

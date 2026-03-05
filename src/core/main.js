@@ -236,6 +236,9 @@ const Game = {
             else if (player.velX < 0) { // moving left
               player.x = (x + 1) * tileSize;
             }
+
+            // Reverse vertical velocity (bounce)
+            player.velY = -player.velY * 0.9; // simple bounce effect
             player.velX = 0;
           }
         }

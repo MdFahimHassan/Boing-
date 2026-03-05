@@ -3,27 +3,37 @@ function startGameSession() {
   const startScreen = document.getElementById("start-screen");
   const hud = document.getElementById("hud");
   const canvas = document.getElementById("gameCanvas");
+  const transitionVideo = document.getElementById("transition-video");
 
-  // Trigger transitions
-  startScreen.classList.add("fade-out");
-  hud.classList.add("fade-in");
+  // Show transition video immediately
+  transitionVideo.style.display = "block";
+  transitionVideo.currentTime = 0;
+  transitionVideo.play();
 
-  // Show canvas
-  canvas.style.display = "block";
+  // Wait 1 second, then swap screens AND load the level
+  setTimeout(() => {
+    startScreen.style.display = "none";   // hide start screen
+    hud.style.display = "flex";           // show HUD
+    canvas.style.display = "block";       // show canvas
 
-  // Load level + start game loop using helper in core
-  Game.loadLevel("../levels/level01.json")
-    .then(levelData => {
-      console.log("Level loaded successfully:", levelData);
-      Game.level = levelData;   // store level data
-      Game.originalTiles = JSON.parse(JSON.stringify(levelData.tiles)); // store original tiles
-      Game.start();             // start the loop
-    })
-    .catch(err => {
-      // loadLevel should never reject, but just in case
-      console.error("Unexpected error loading level:", err);
-      alert("Unable to initialize game. See console for details.");
-    });
+    // Load level + start game loop
+    Game.loadLevel("../levels/level01.json")
+      .then(levelData => {
+        console.log("Level loaded successfully:", levelData);
+        Game.level = levelData;
+        Game.originalTiles = JSON.parse(JSON.stringify(levelData.tiles));
+        Game.start(); // start loop now, while transition is still playing
+      })
+      .catch(err => {
+        console.error("Unexpected error loading level:", err);
+        alert("Unable to initialize game. See console for details.");
+      });
+  }, 1000); // 1 second delay
+
+  // When video ends, remove overlay
+  transitionVideo.onended = () => {
+    transitionVideo.style.display = "none";
+  };
 }
 
 document.addEventListener("DOMContentLoaded", () => {

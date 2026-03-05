@@ -17,8 +17,9 @@ document.addEventListener("keydown", (e) => {
 
   // Jump on Up Arrow key press
   if (e.key === "ArrowUp" && player.onground) {
-    player.velY = -350; // jump strength
+    player.velY = -250; // jump strength
     player.onground = false;
+    player.fallStartY = null; // reset fall start when jumping
   }
 
   // Reset level on R key press
@@ -30,6 +31,7 @@ document.addEventListener("keydown", (e) => {
     player.velY = 0;
     player.onground = false;
     player.hitObstacle = false;
+    player.fallStartY = null; // reset fall start on reset
     Game.score = 0; // reset score
     Game.level.tiles = JSON.parse(JSON.stringify(Game.originalTiles)); // restore collectibles
     updateHUD(Game.score, Game.lives, 1);
@@ -48,10 +50,11 @@ const player = { // player properties
   velX: 0,
   velY: 0,
   speed: 200,
-  gravity: 800,
+  gravity: 400,
   onground: false,
   lives: 3,
-  hitObstacle: false
+  hitObstacle: false,
+  fallStartY: null // track starting height for bounce calculation
 };
 
 const DEFAULT_LEVEL = {
@@ -109,6 +112,7 @@ const Game = {
     player.velY = 0;
     player.onground = false;
     player.hitObstacle = false;
+    player.fallStartY = null; // reset fall start on start
 
     // Initialize game state
     this.score = 0;
@@ -151,49 +155,88 @@ const Game = {
     const playerTop = Math.floor(player.y / tileSize);
     const playerBot = Math.ceil((player.y + player.height) / tileSize);
     
-    for (let y = playerTop; y < playerBot; y++) {
-      for (let x = playerLef; x < playerRig; x++) {
-        if (x < 0 || x >= width || y < 0 || y >= height) continue; // out of bounds
-
-        const tile = tiles[y][x];
-        if (tile === 1 || tile === 2) { // solid tile
-          if (axis === "x") {
-            if (player.velX > 0) { // moving right
-              player.x = x * tileSize - player.width; // snap to left of tile
-            }
-            else if (player.velX < 0) { // moving left
-              player.x = (x + 1) * tileSize; // snap to right of tile
-            }
-            player.velX = 0; // stop horizontal movement
-          }
-          else if (axis === "y") {
-            if (player.velY > 0) { // falling
-              player.y = y * tileSize - player.height; // snap to top of tile
-              player.velY = 0; // stop vertical movement
-              player.onground = true; // player is on the ground
-            }
-            else if (player.velY < 0) { // jumping
-              player.y = (y + 1) * tileSize; // snap to bottom of tile
-              player.velY = 0; // stop upward movement
+    // Handle Y-axis collision separately to avoid multiple snaps
+    if (axis === "y") {
+      if (player.velY > 0) { // falling - find highest solid tile
+        let maxY = -1;
+        for (let y = playerTop; y < playerBot; y++) {
+          for (let x = playerLef; x < playerRig; x++) {
+            if (x < 0 || x >= width || y < 0 || y >= height) continue;
+            const tile = tiles[y][x];
+            if (tile === 1 || tile === 2) {
+              if (y > maxY) maxY = y; // find the LOWEST (highest Y) solid tile
             }
           }
         }
-
-        // Handle obstacle collision (tile 2)
-        if (tile === 2 && !player.hitObstacle) {
-          const { spawn, tileSize } = this.level;
-          player.x = spawn.x * tileSize;
-          player.y = spawn.y * tileSize;
-          player.velX = 0;
+        if (maxY !== -1) {
+          player.y = maxY * tileSize - player.height; // snap to top of the lowest solid tile
+          if (player.fallStartY !== null) {
+            const heightFallen = player.fallStartY - player.y;
+            const bounceVel = Math.min(80, -heightFallen * 9); // simple bounce calculation
+            player.velY = -bounceVel;
+            if (Math.abs(player.velY) < 2) {
+              player.velY = 0;
+              player.onground = true;
+            } else {
+              player.onground = false;
+            }
+            player.fallStartY = null;
+          } else {
+            player.velY = 0;
+            player.onground = true;
+          }
+        }
+      } else if (player.velY < 0) { // jumping - find lowest solid tile above
+        let minY = 999;
+        for (let y = playerTop; y < playerBot; y++) {
+          for (let x = playerLef; x < playerRig; x++) {
+            if (x < 0 || x >= width || y < 0 || y >= height) continue;
+            const tile = tiles[y][x];
+            if (tile === 1 && y < minY) minY = y; // find the HIGHEST (lowest Y) solid tile that's not an obstacle
+          }
+        }
+        if (minY !== 999) {
+          player.y = (minY + 1) * tileSize;
           player.velY = 0;
-          player.onground = false;
-          Game.lives--;
-          Game.score = 0; // reset score on hit
-          Game.level.tiles = JSON.parse(JSON.stringify(Game.originalTiles)); // restore collectibles
-          updateHUD(Game.score, Game.lives, 1);
-          player.hitObstacle = true;
-          if (Game.lives <= 0) {
-            Game.gameOver = true;
+        }
+      }
+      return; // Done with Y-axis, don't process tiles below
+    }
+    
+    // Handle X-axis collision
+    for (let y = playerTop; y < playerBot; y++) {
+      for (let x = playerLef; x < playerRig; x++) {
+        if (x < 0 || x >= width || y < 0 || y >= height) continue;
+
+        const tile = tiles[y][x];
+        if (tile === 1 || tile === 2) { // solid tile
+          // Handle obstacle collision
+          if (tile === 2 && !player.hitObstacle) {
+            const { spawn, tileSize: ts } = this.level;
+            player.x = spawn.x * ts;
+            player.y = spawn.y * ts;
+            player.velX = 0;
+            player.velY = 0;
+            player.onground = false;
+            player.fallStartY = null;
+            Game.lives--;
+            Game.score = 0;
+            Game.level.tiles = JSON.parse(JSON.stringify(Game.originalTiles));
+            updateHUD(Game.score, Game.lives, 1);
+            player.hitObstacle = true;
+            if (Game.lives <= 0) {
+              Game.gameOver = true;
+            }
+          }
+
+          if (axis === "x") {
+            if (player.velX > 0) { // moving right
+              player.x = x * tileSize - player.width;
+            }
+            else if (player.velX < 0) { // moving left
+              player.x = (x + 1) * tileSize;
+            }
+            player.velX = 0;
           }
         }
 
@@ -221,6 +264,12 @@ const Game = {
 
 
     player.velY += player.gravity * dt; // apply gravity
+
+    // Track fall start height
+    if (player.velY > 0 && player.fallStartY === null) {
+      player.fallStartY = player.y;
+    }
+
     player.x += player.velX * dt;
     this.handleCcollision("x"); // handle collisions after horizontal movement
     player.y += player.velY * dt;
@@ -228,19 +277,13 @@ const Game = {
 
     // Check if player fell off the level
     if (player.y > this.level.height * this.level.tileSize) {
-      const { spawn, tileSize } = this.level;
-      player.x = spawn.x * tileSize;
-      player.y = spawn.y * tileSize;
       player.velX = 0;
       player.velY = 0;
       player.onground = false;
-      Game.lives--;
+      player.fallStartY = null; // reset fall start on fall off
       Game.score = 0; // reset score on fall
       Game.level.tiles = JSON.parse(JSON.stringify(Game.originalTiles)); // restore collectibles
       updateHUD(Game.score, Game.lives, 1);
-      if (Game.lives <= 0) {
-        Game.gameOver = true;
-      }
     }
   },
 

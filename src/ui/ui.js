@@ -1,20 +1,49 @@
+// ---------------------------
+// UI Logic for Boing!
+// ---------------------------
+
 function startGameSession() {
-  console.log("Game Started!");
+  console.log("Transition to difficulty screen...");
   const startScreen = document.getElementById("start-screen");
-  const hud = document.getElementById("hud");
-  const canvas = document.getElementById("gameCanvas");
+  const difficultyScreen = document.getElementById("difficulty-screen");
   const transitionVideo = document.getElementById("transition-video");
 
-  // Show transition video immediately
+  // Play transition video immediately
   transitionVideo.style.display = "block";
   transitionVideo.currentTime = 0;
   transitionVideo.play();
 
-  // Wait 1 second, then swap screens AND load the level
+  // After 1 second, swap to difficulty screen
   setTimeout(() => {
-    startScreen.style.display = "none";   // hide start screen
-    hud.style.display = "flex";           // show HUD
-    canvas.style.display = "block";       // show canvas
+    startScreen.style.display = "none";
+    difficultyScreen.style.display = "block";
+  }, 1000);
+
+  // Hide transition overlay when finished
+  transitionVideo.onended = () => {
+    transitionVideo.style.display = "none";
+  };
+}
+
+// ---------------------------
+// Difficulty Selection
+// ---------------------------
+function startEasyMode() {
+  const difficultyScreen = document.getElementById("difficulty-screen");
+  const hud = document.getElementById("hud");
+  const canvas = document.getElementById("gameCanvas");
+  const transitionVideo = document.getElementById("transition-video");
+
+  // Play transition again
+  transitionVideo.style.display = "block";
+  transitionVideo.currentTime = 0;
+  transitionVideo.play();
+
+  // After 1 second, swap to game canvas + HUD
+  setTimeout(() => {
+    difficultyScreen.style.display = "none";
+    hud.style.display = "flex";
+    canvas.style.display = "block";
 
     // Load level + start game loop
     Game.loadLevel("../levels/level01.json")
@@ -22,30 +51,35 @@ function startGameSession() {
         console.log("Level loaded successfully:", levelData);
         Game.level = levelData;
         Game.originalTiles = JSON.parse(JSON.stringify(levelData.tiles));
-        Game.start(); // start loop now, while transition is still playing
+        Game.start();
       })
       .catch(err => {
         console.error("Unexpected error loading level:", err);
         alert("Unable to initialize game. See console for details.");
       });
-  }, 1000); // 1 second delay
+  }, 1000);
 
-  // When video ends, remove overlay
   transitionVideo.onended = () => {
     transitionVideo.style.display = "none";
   };
 }
 
+// ---------------------------
+// DOM Ready
+// ---------------------------
 document.addEventListener("DOMContentLoaded", () => {
   const startBtn = document.getElementById("start-btn");
   const settingsBtn = document.getElementById("settings-btn");
+  const easyBtn = document.getElementById("easy-btn");
+  const mediumBtn = document.getElementById("medium-btn");
+  const hardBtn = document.getElementById("hard-btn");
 
   if (!startBtn) {
     console.error("Start button not found!");
     return;
   }
 
-  // Start button
+  // Start button → goes to difficulty screen
   startBtn.addEventListener("click", startGameSession);
 
   // Enter key also starts game
@@ -59,6 +93,21 @@ document.addEventListener("DOMContentLoaded", () => {
   if (settingsBtn) {
     settingsBtn.addEventListener("click", () => {
       alert("Settings menu coming soon!");
+    });
+  }
+
+  // Difficulty buttons
+  if (easyBtn) {
+    easyBtn.addEventListener("click", startEasyMode);
+  }
+  if (mediumBtn) {
+    mediumBtn.addEventListener("click", () => {
+      alert("Medium difficulty coming soon!");
+    });
+  }
+  if (hardBtn) {
+    hardBtn.addEventListener("click", () => {
+      alert("Hard difficulty coming soon!");
     });
   }
 
@@ -94,7 +143,9 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 });
 
-// Example function to update HUD
+// ---------------------------
+// HUD Update Function
+// ---------------------------
 function updateHUD(score, lives, level) {
   document.getElementById("lives").innerHTML = `<span class="icon">❤️</span> Lives: ${lives}`;
   document.getElementById("score").innerHTML = `<span class="icon">⭐</span> Score: ${score}`;

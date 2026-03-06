@@ -15,6 +15,13 @@
   font-style: normal;
 }
 
+@font-face {
+  font-family: 'Talina';   /* or whatever name you prefer */
+  src: url('assets/fonts/Talina DEMO.otf') format('opentype');
+  font-weight: normal;
+  font-style: normal;
+}
+
 /* Global body styles */
 body {
   margin: 0;
@@ -160,4 +167,47 @@ button:hover {
   z-index: 9999;        /* on top of everything */
   display: none;        /* hidden until triggered */
   pointer-events: none; /* don’t block clicks */
+}
+
+/* Difficulty Screen Box */
+#difficulty-screen {
+  display: none;
+  text-align: center;
+  margin: auto;
+  margin-top: 15%;
+  background: rgba(0,0,0,0.7);
+  border: 3px solid #fff;
+  padding: 20px;
+  width: 300px;   /* compact width */
+  box-shadow: 0 0 12px #982598, 0 0 24px #E491C9;
+  border-radius: 6px;
+}
+
+/* Title (keep original font) */
+#difficulty-screen h2 {
+  font-family: 'Talina', 'Press Start 2P', cursive; /* your chosen font */
+  font-size: 28px;
+  color: #fff;                /* white text */
+  margin-bottom: 15px;
+  -webkit-text-stroke: 0.75px #0e0e0e; /* black border around text */
+}
+
+/* Buttons (ByteBounce font) */
+#difficulty-screen button {
+  font-family: 'ByteBounce', 'Press Start 2P', cursive;
+  font-size: 16px;
+  background: #222;
+  color: #fff;
+  border: 2px solid #fff;
+  padding: 10px;
+  margin: 8px 0;
+  width: 100%;
+  cursor: pointer;
+  transition: all 0.3s ease-in-out;
+}
+
+#difficulty-screen button:hover {
+  background: #fff;
+  color: #000;
+  box-shadow: 0 0 8px #982598, 0 0 16px #E491C9;
 }

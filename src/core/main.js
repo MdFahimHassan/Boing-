@@ -16,7 +16,7 @@ document.addEventListener("keydown", (e) => {
   input.keys[e.key] = true;
 
   // Jump on Up Arrow key press
-  if (e.key === "ArrowUp" && player.onground) {
+  if (e.key === "ArrowUp" && player.onground && Game.spawnProtection <= 0) {
     player.velY = -250; // jump strength
     player.onground = false;
     player.fallStartY = null; // reset fall start when jumping
@@ -35,6 +35,7 @@ document.addEventListener("keydown", (e) => {
     Game.score = 0; // reset score
     Game.level.tiles = JSON.parse(JSON.stringify(Game.originalTiles)); // restore collectibles
     updateHUD(Game.score, Game.lives, 1);
+    Game.spawnProtection = 1; // freeze player for 1 second on manual reset
   }
 });
 
@@ -84,6 +85,7 @@ const Game = {
   paused: false, // pause state
   levelCompleted: false, // level completion state
   gameOver: false, // game over state
+  spawnProtection: 0, // seconds remaining where player is frozen after spawn
 
   async loadLevel(path) {
     // attempt fetch, fall back to default if network fails (e.g. file://)
@@ -120,6 +122,7 @@ const Game = {
     this.paused = false;
     this.levelCompleted = false;
     this.gameOver = false;
+    this.spawnProtection = 1; // 1 second freeze on level start
 
     // Update HUD
     updateHUD(this.score, this.lives, 1);
@@ -190,6 +193,7 @@ const Game = {
             if (Game.lives <= 0) {
               Game.gameOver = true;
             }
+            Game.spawnProtection = 1; // freeze player for 1 second after respawn
             return;
           }
 
@@ -252,6 +256,7 @@ const Game = {
               Game.gameOver = true;
             }
 
+            Game.spawnProtection = 1; // freeze player for 1 second after respawn
             return; // skip further collision processing this frame after hitting an obstacle
           }
 
@@ -333,13 +338,20 @@ const Game = {
 
     player.hitObstacle = false; // reset flag each frame
 
+    // Tick down spawn protection timer
+    if (this.spawnProtection > 0) {
+      this.spawnProtection = Math.max(0, this.spawnProtection - dt);
+    }
+
     player.velX = 0; // reset horizontal velocity each frame
 
-    if (input.isDown("ArrowRight")) {
-      player.velX = player.speed;
-    }
-    if (input.isDown("ArrowLeft")) {
-      player.velX = -player.speed;
+    if (this.spawnProtection <= 0) {
+      if (input.isDown("ArrowRight")) {
+        player.velX = player.speed;
+      }
+      if (input.isDown("ArrowLeft")) {
+        player.velX = -player.speed;
+      }
     }
 
 
@@ -409,8 +421,10 @@ const Game = {
     ctx.font = "20px monospace";
     ctx.fillText("Platformer Skeleton Running", 20, 40);
 
-    //Draw player
-    ctx.fillStyle = "red";
+    //Draw player - flicker during spawn protection
+    const isProtected = Game.spawnProtection > 0;
+    const flicker = isProtected && Math.floor(performance.now() / 100) % 2 === 0;
+    ctx.fillStyle = flicker ? "rgba(255,100,100,0.4)" : "red";
     ctx.fillRect(player.x, player.y, player.width, player.height);
   }
 };

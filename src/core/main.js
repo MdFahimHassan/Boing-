@@ -267,7 +267,7 @@ const Game = {
             player.x = (x + 1) * tileSize;
             player.wallBounceX = player.speed * 1.5;
           }
-          player.velY = -350; // same upward launch as landing on top
+          player.velY = -350; // match bouncepad upward launch value
           player.onground = false;
           player.fallStartY = null;
           player.wallBounceTimer = 0.1; // 0.1 second no-input window
@@ -326,10 +326,10 @@ const Game = {
           if (tile === 1) { // solid wall - bounce the player back
             if (player.velX > 0) { // moving right, bounce back left
               player.x = x * tileSize - player.width;
-              player.wallBounceX = -player.speed * 2; // double reversed velocity
+              player.wallBounceX = -player.speed; // 1x reversed velocity
             } else if (player.velX < 0) { // moving left, bounce back right
               player.x = (x + 1) * tileSize;
-              player.wallBounceX = player.speed * 2;
+              player.wallBounceX = player.speed; // 1x reversed velocity
             }
             player.wallBounceTimer = 0.1; // 0.1 second no-input window
             player.velX = 0;

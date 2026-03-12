@@ -326,10 +326,10 @@ const Game = {
           if (tile === 1) { // solid wall - bounce the player back
             if (player.velX > 0) { // moving right, bounce back left
               player.x = x * tileSize - player.width;
-              player.wallBounceX = -player.speed; // 1x reversed velocity
+              player.wallBounceX = -player.speed * 0.5; // 0.5x reversed velocity
             } else if (player.velX < 0) { // moving left, bounce back right
               player.x = (x + 1) * tileSize;
-              player.wallBounceX = player.speed; // 1x reversed velocity
+              player.wallBounceX = player.speed * 0.5; // 0.5x reversed velocity
             }
             player.wallBounceTimer = 0.1; // 0.1 second no-input window
             player.velX = 0;

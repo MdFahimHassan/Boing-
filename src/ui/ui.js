@@ -2,46 +2,88 @@
 // UI Logic for Boing!
 // ---------------------------
 
+// Start → Difficulty transition
+// Plays a transition overlay video and optionally triggers the screen change early (e.g. after 1s)
+function playTransitionVideo(videoEl, onComplete, switchDelayMs = 0) {
+  if (!videoEl) {
+    onComplete?.();
+    return;
+  }
+
+  videoEl.style.display = "block";
+  videoEl.currentTime = 0;
+  videoEl.muted = true; // ensure autoplay works across browsers
+
+  const cleanup = () => {
+    videoEl.style.display = "none";
+    videoEl.onended = null;
+  };
+
+  let triggered = false;
+  const triggerComplete = () => {
+    if (triggered) return;
+    triggered = true;
+    onComplete?.();
+  };
+
+  const switchTimer = switchDelayMs >= 0 ? setTimeout(() => {
+    triggerComplete();
+  }, switchDelayMs) : null;
+
+  // If the developer explicitly wants immediate screen change during transition, call immediately.
+  if (switchDelayMs === 0) {
+    triggerComplete();
+  }
+
+  const fallbackTimeout = setTimeout(() => {
+    console.warn("Transition video did not end in time, proceeding.");
+    cleanup();
+    triggerComplete();
+  }, 5000);
+
+  videoEl.onended = () => {
+    clearTimeout(fallbackTimeout);
+    if (switchTimer) clearTimeout(switchTimer);
+    cleanup();
+    triggerComplete();
+  };
+
+  videoEl.play().catch((err) => {
+    console.warn("Unable to play transition video", err);
+    clearTimeout(fallbackTimeout);
+    if (switchTimer) clearTimeout(switchTimer);
+    cleanup();
+    triggerComplete();
+  });
+}
+
 function startGameSession() {
   console.log("Transition to difficulty screen...");
   const startScreen = document.getElementById("start-screen");
   const difficultyScreen = document.getElementById("difficulty-screen");
   const transitionVideo = document.getElementById("transition-video");
 
-  // Play transition video immediately
-  transitionVideo.style.display = "block";
-  transitionVideo.currentTime = 0;
-  transitionVideo.play();
-
-  // After 1 second, swap to difficulty screen
-  setTimeout(() => {
-    startScreen.style.display = "none";
-    difficultyScreen.style.display = "block";
-  }, 1000);
-
-  // Hide transition overlay when finished
-  transitionVideo.onended = () => {
-    transitionVideo.style.display = "none";
-  };
+  // Keep start screen visible during the transition, hide after delay.
+  playTransitionVideo(transitionVideo, () => {
+    startScreen.classList.add("hidden");
+    difficultyScreen.classList.remove("hidden");
+  }, 1000);  // reveal difficulty 1 second after start
 }
 
 // ---------------------------
 // Difficulty Selection
 // ---------------------------
+
+// Easy → Game transition
 function startEasyMode() {
   const difficultyScreen = document.getElementById("difficulty-screen");
   const hud = document.getElementById("hud");
   const canvas = document.getElementById("gameCanvas");
-  const transitionVideo = document.getElementById("transition-video");
+  const transitionVideo = document.getElementById("difficulty-transition-video");
 
-  // Play transition again
-  transitionVideo.style.display = "block";
-  transitionVideo.currentTime = 0;
-  transitionVideo.play();
-
-  // After 1 second, swap to game canvas + HUD
-  setTimeout(() => {
-    difficultyScreen.style.display = "none";
+  // Keep difficulty screen visible during the transition, hide after delay.
+  playTransitionVideo(transitionVideo, () => {
+    difficultyScreen.classList.add("hidden");
     hud.style.display = "flex";
     canvas.style.display = "block";
 
@@ -57,11 +99,7 @@ function startEasyMode() {
         console.error("Unexpected error loading level:", err);
         alert("Unable to initialize game. See console for details.");
       });
-  }, 1000);
-
-  transitionVideo.onended = () => {
-    transitionVideo.style.display = "none";
-  };
+  }, 1000); // reveal game screen 1 second after start
 }
 
 // ---------------------------

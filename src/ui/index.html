@@ -6,9 +6,11 @@
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
+  <!-- Background Loop -->
   <video autoplay muted loop id="bg-video">
-  <source src="assets/vids/bg-loop.mp4" type="video/mp4">
+    <source src="assets/vids/bg-loop.mp4" type="video/mp4">
   </video>
+
   <!-- Start Screen -->
   <div id="start-screen">
     <h1>Boing!</h1>
@@ -16,28 +18,32 @@
     <button id="settings-btn">Settings</button>
   </div>
 
+  <!-- Difficulty Screen -->
+  <div id="difficulty-screen" class="hidden">
+    <h2>Select Difficulty</h2>
+    <button id="easy-btn">Easy</button>
+    <button id="medium-btn">Medium</button>
+    <button id="hard-btn">Hard</button>
+  </div>
+
   <!-- Game Canvas -->
   <canvas id="gameCanvas" width="800" height="600"></canvas>
 
   <!-- HUD -->
   <div id="hud">
-  <span id="lives"><span class="icon">❤️</span> Lives: 3</span>
-  <span id="score"><span class="icon">⭐</span> Score: 0</span>
-  <span id="level"><span class="icon">🏆</span> Level: 01</span>
-</div>
-  
-  <!-- Scripts -->
+    <span id="lives"><span class="icon">❤️</span> Lives: 3</span>
+    <span id="score"><span class="icon">⭐</span> Score: 0</span>
+    <span id="level"><span class="icon">🏆</span> Level: 01</span>
+  </div>
+
+  <!-- Transition Video for Start → Difficulty -->
+  <video id="transition-video" src="assets/vids/Splash1.webm" preload="auto" playsinline></video>
+
+  <!-- Transition Video for Difficulty → Game -->
+  <video id="difficulty-transition-video" src="assets/vids/GTACYW.webm" preload="auto" playsinline></video>
+
+  <!-- Scripts (always last) -->
   <script src="../core/main.js"></script>
   <script src="ui.js"></script>
-
-  <!-- Difficulty Screen -->
-<div id="difficulty-screen" class="hidden">
-  <h2>Select Difficulty</h2>
-  <button id="easy-btn">Easy</button>
-  <button id="medium-btn">Medium</button>
-  <button id="hard-btn">Hard</button>
-</div>
-
-  <video id="transition-video" src="assets/vids/Splash1.webm" preload="auto"></video>
 </body>
-</html> 
+</html>

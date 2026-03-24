@@ -69,12 +69,12 @@ const DEFAULT_LEVEL = {
   height: 6,
   spawn: { x: 0, y: 4 },
   tiles: [
-    [0,0,0,0,0,0,0,0,0,0],
-    [0,0,0,0,0,0,0,0,0,0],
-    [0,0,0,0,0,0,0,0,0,0],
-    [0,0,0,0,0,0,0,0,0,0],
-    [0,0,0,0,2,0,0,0,4,0],
-    [1,1,1,1,1,1,1,1,1,1]
+    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 2, 0, 0, 0, 4, 0],
+    [1, 1, 1, 1, 1, 1, 1, 1, 1, 1]
   ]
 };
 
@@ -132,13 +132,13 @@ const Game = {
 
     // Canvas is now visible when game starts
     canvas.style.display = "block";
-    
+
     this.lastTime = performance.now();
     requestAnimationFrame(this.loop.bind(this));
   },
 
   loop(timestamp) {
-    this.deltaTime = Math.min((timestamp - this.lastTime) / 1000, 1/30); // cap deltaTime to prevent large jumps
+    this.deltaTime = Math.min((timestamp - this.lastTime) / 1000, 1 / 30); // cap deltaTime to prevent large jumps
     this.lastTime = timestamp;
 
     if (!this.paused && !this.levelCompleted && !this.gameOver) {
@@ -154,13 +154,13 @@ const Game = {
   handleCcollision(axis) {
     if (!this.level) return;
 
-    const {tiles, tileSize, width, height} = this.level;
+    const { tiles, tileSize, width, height } = this.level;
 
     const playerLef = Math.floor(player.x / tileSize);
     const playerRig = Math.ceil((player.x + player.width) / tileSize);
     const playerTop = Math.floor(player.y / tileSize);
     const playerBot = Math.ceil((player.y + player.height) / tileSize);
-    
+
     // Handle Y-axis collision separately to avoid multiple snaps
     if (axis === "y") {
       if (player.velY > 0) { // falling - find highest solid tile
@@ -250,7 +250,7 @@ const Game = {
       }
       return; // Done with Y-axis, don't process tiles below
     }
-    
+
     // Handle X-axis collision
     for (let y = playerTop; y < playerBot; y++) {
       for (let x = playerLef; x < playerRig; x++) {
@@ -318,10 +318,10 @@ const Game = {
 
             if (Game.lives <= 0) {
               Game.gameOver = true;
-          }
+            }
 
-          return; // IMPORTANT: stop further collision processing
-        }
+            return; // IMPORTANT: stop further collision processing
+          }
 
           if (tile === 1) { // solid wall - bounce the player back
             if (player.velX > 0) { // moving right, bounce back left

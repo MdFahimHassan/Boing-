@@ -2,7 +2,7 @@
 @font-face {
   font-family: 'Tsuchigumo';
   src: url('assets/fonts/Tsuchigumo.ttf') format('truetype'),
-       url('assets/fonts/Tsuchigumo.otf') format('opentype');
+    url('assets/fonts/Tsuchigumo.otf') format('opentype');
   font-weight: normal;
   font-style: normal;
 }
@@ -16,21 +16,25 @@
 }
 
 @font-face {
-  font-family: 'Talina';   /* or whatever name you prefer */
+  font-family: 'Talina';
+  /* or whatever name you prefer */
   src: url('assets/fonts/Talina DEMO.otf') format('opentype');
   font-weight: normal;
   font-style: normal;
 }
 
 /* Global page styles */
-html, body {
+html,
+body {
   height: 100%;
   margin: 0;
-  overflow: hidden; /* disable scrolling */
+  overflow: hidden;
+  /* disable scrolling */
 }
 
 body {
-  font-family: 'Press Start 2P', cursive; /* fallback retro pixel font */
+  font-family: 'Press Start 2P', cursive;
+  /* fallback retro pixel font */
   background: url('assets/Bg.jpg') no-repeat center center fixed;
   background-size: cover;
   color: #fff;
@@ -40,37 +44,63 @@ body {
 /* Retro pixel-style box */
 /* Retro pixel-style box */
 #start-screen {
-  position: fixed;        /* lock to viewport */
-  top: 50%; left: 50%;    /* center it */
+  position: fixed;
+  /* lock to viewport */
+  top: 50%;
+  left: 50%;
+  /* center it */
   transform: translate(-50%, -50%);
-  width: 400px;           /* fixed width */
+  width: 400px;
+  /* fixed width */
   padding: 20px;
   background: rgba(0, 0, 0, 0.6);
-  border: 4px solid #fff;       /* main border */
-  border-radius: 0;             /* sharp corners */
-  image-rendering: pixelated;   /* crisp edges */
-  box-shadow: 4px 4px 0 #000,   /* offset block shadow */
-              8px 8px 0 #fff;   /* second offset block shadow */
+  border: 4px solid #fff;
+  /* main border */
+  border-radius: 0;
+  /* sharp corners */
+  image-rendering: pixelated;
+  /* crisp edges */
+  box-shadow: 4px 4px 0 #000,
+    /* offset block shadow */
+    8px 8px 0 #fff;
+  /* second offset block shadow */
   text-align: center;
-  z-index: 1000;          /* above background video */
+  z-index: 1000;
+  /* above background video */
 }
 
 /* Title "Boing!" */
 #start-screen h1 {
   font-family: 'Tsuchigumo', 'Press Start 2P', cursive;
-  font-size: 54px;   /* adjust size as needed */
+  font-size: 54px;
+  /* adjust size as needed */
   margin-bottom: 20px;
-  animation: bounce 2s infinite, purpleGlow 3s infinite; /* combo animation */
+  animation: bounce 2s infinite, purpleGlow 3s infinite;
+  /* combo animation */
 }
 
 @keyframes bounce {
-  0%, 100% { transform: translateY(0); }
-  50% { transform: translateY(-20px); }
+
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+
+  50% {
+    transform: translateY(-20px);
+  }
 }
 
 @keyframes purpleGlow {
-  0%, 100% { text-shadow: 0 0 10px #a64cff; }
-  50% { text-shadow: 0 0 20px #fff, 0 0 30px #a64cff; }
+
+  0%,
+  100% {
+    text-shadow: 0 0 10px #a64cff;
+  }
+
+  50% {
+    text-shadow: 0 0 20px #fff, 0 0 30px #a64cff;
+  }
 }
 
 /* Apply ByteBounce to start screen buttons */
@@ -84,18 +114,24 @@ button {
   margin: 10px;
   padding: 10px 20px;
   font-size: 16px;
-  background: #222;       /* default dark background */
-  color: #fff;            /* default white text */
+  background: #222;
+  /* default dark background */
+  color: #fff;
+  /* default white text */
   border: 2px solid #fff;
   cursor: pointer;
   transition: all 0.3s ease-in-out;
 }
 
 button:hover {
-  background: #fff;       /* invert to white background */
-  color: #000;            /* invert text to black */
-  box-shadow: 0 0 12px #982598, 0 0 24px #E491C9; /* purple glow */
-  transform: scale(1.05); /* subtle bounce effect */
+  background: #fff;
+  /* invert to white background */
+  color: #000;
+  /* invert text to black */
+  box-shadow: 0 0 12px #982598, 0 0 24px #E491C9;
+  /* purple glow */
+  transform: scale(1.05);
+  /* subtle bounce effect */
 }
 
 /* HUD (Score, Lives, Level) */
@@ -103,13 +139,15 @@ button:hover {
   position: fixed;
   top: 10px;
   left: 10px;
-  display: none; /* hidden by default, shown when game starts */
+  display: none;
+  /* hidden by default, shown when game starts */
   gap: 20px;
   padding: 8px 12px;
   background: rgba(0, 0, 0, 0.5);
   border: 2px solid #fff;
   font-size: 18px;
-  font-family: 'ByteBounce', 'Press Start 2P', cursive; /* ByteBounce applied here */
+  font-family: 'ByteBounce', 'Press Start 2P', cursive;
+  /* ByteBounce applied here */
 }
 
 .hidden {
@@ -139,7 +177,7 @@ button:hover {
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-  background: rgba(0,0,0,0.8);
+  background: rgba(0, 0, 0, 0.8);
   border: 4px solid #fff;
   padding: 20px;
   text-align: center;
@@ -166,23 +204,55 @@ button:hover {
 
 #bg-video {
   position: fixed;
-  top: 0; left: 0;
-  width: 100%; height: 100%;
-  object-fit: cover;   /* ensures it fills the screen */
-  z-index: -1;         /* pushes it behind your UI */
-  pointer-events: none; /* prevents clicks from hitting the video */
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  /* ensures it fills the screen */
+  z-index: -1;
+  /* pushes it behind your UI */
+  pointer-events: none;
+  /* prevents clicks from hitting the video */
+}
+
+#music-btn {
+  position: fixed;
+  top: 15px;
+  right: 15px;
+  padding: 10px 20px;
+  font-family: 'ByteBounce', 'Press Start 2P', cursive;
+  font-size: 16px;
+  background: #222;
+  color: #fff;
+  border: 2px solid #fff;
+  cursor: pointer;
+  transition: all 0.3s ease-in-out;
+  z-index: 2000; /* stays above background video */
+}
+
+#music-btn:hover {
+  background: #fff;
+  color: #000;
+  box-shadow: 0 0 12px #982598, 0 0 24px #E491C9;
 }
 
 #transition-video,
 #difficulty-transition-video {
   position: fixed;
-  top: 0; left: 0;
-  width: 100%; height: 100%;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
   object-fit: cover;
-  background: transparent; /* allow alpha channel video to show content underneath */
-  z-index: 99999;       /* on top of everything */
-  display: none;        /* hidden until triggered */
-  pointer-events: none; /* don’t block clicks */
+  background: transparent;
+  /* allow alpha channel video to show content underneath */
+  z-index: 99999;
+  /* on top of everything */
+  display: none;
+  /* hidden until triggered */
+  pointer-events: none;
+  /* don’t block clicks */
 }
 
 /* Difficulty Screen Box */
@@ -190,10 +260,11 @@ button:hover {
   text-align: center;
   margin: auto;
   margin-top: 15%;
-  background: rgba(0,0,0,0.7);
+  background: rgba(0, 0, 0, 0.7);
   border: 3px solid #fff;
   padding: 20px;
-  width: 300px;   /* compact width */
+  width: 300px;
+  /* compact width */
   box-shadow: 0 0 12px #982598, 0 0 24px #E491C9;
   border-radius: 6px;
 }
@@ -205,11 +276,14 @@ button:hover {
 
 /* Title (keep original font) */
 #difficulty-screen h2 {
-  font-family: 'Talina', 'Press Start 2P', cursive; /* your chosen font */
+  font-family: 'Talina', 'Press Start 2P', cursive;
+  /* your chosen font */
   font-size: 28px;
-  color: #fff;                /* white text */
+  color: #fff;
+  /* white text */
   margin-bottom: 15px;
-  -webkit-text-stroke: 0.75px #0e0e0e; /* black border around text */
+  -webkit-text-stroke: 0.75px #0e0e0e;
+  /* black border around text */
 }
 
 /* Buttons (ByteBounce font) */

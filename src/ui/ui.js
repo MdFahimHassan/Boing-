@@ -2,8 +2,58 @@
 // UI Logic for Boing!
 // ---------------------------
 
-// Start → Difficulty transition
-// Plays a transition overlay video and optionally triggers the screen change early (e.g. after 1s)
+// ---------------------------
+// Audio Manager
+// ---------------------------
+let musicEnabled = false;
+
+const AudioManager = {
+  bgMusic: null,
+
+  playMusic(src, loop = true, volume = 0.5) {
+    if (this.bgMusic) {
+      this.bgMusic.pause();
+      this.bgMusic = null;
+    }
+    this.bgMusic = new Audio(src);
+    this.bgMusic.loop = loop;
+    this.bgMusic.volume = volume;
+
+    const playPromise = this.bgMusic.play();
+    if (playPromise !== undefined) {
+      playPromise.catch((err) => {
+        console.warn(`Audio failed to play (${src})`, err);
+      });
+    }
+    return playPromise;
+  },
+
+  stopMusic() {
+    if (this.bgMusic) {
+      this.bgMusic.pause();
+      this.bgMusic = null;
+    }
+  }
+};
+
+function setMusicEnabled(enabled) {
+  const musicBtn = document.getElementById("music-btn");
+  musicEnabled = enabled;
+  localStorage.setItem("musicEnabled", enabled ? "true" : "false");
+
+  if (enabled) {
+    AudioManager.playMusic("assets/audios/DefaultBgMusic.mp3", true, 0.5);
+    if (musicBtn) musicBtn.textContent = "🎵 Music On";
+  } else {
+    AudioManager.stopMusic();
+    if (musicBtn) musicBtn.textContent = "🎵 Music Off";
+  }
+}
+
+
+// ---------------------------
+// Transition Video Helper
+// ---------------------------
 function playTransitionVideo(videoEl, onComplete, switchDelayMs = 0) {
   if (!videoEl) {
     onComplete?.();
@@ -30,7 +80,6 @@ function playTransitionVideo(videoEl, onComplete, switchDelayMs = 0) {
     triggerComplete();
   }, switchDelayMs) : null;
 
-  // If the developer explicitly wants immediate screen change during transition, call immediately.
   if (switchDelayMs === 0) {
     triggerComplete();
   }
@@ -57,49 +106,54 @@ function playTransitionVideo(videoEl, onComplete, switchDelayMs = 0) {
   });
 }
 
+// ---------------------------
+// Start → Difficulty transition
+// ---------------------------
 function startGameSession() {
   console.log("Transition to difficulty screen...");
   const startScreen = document.getElementById("start-screen");
   const difficultyScreen = document.getElementById("difficulty-screen");
   const transitionVideo = document.getElementById("transition-video");
 
-  // Keep start screen visible during the transition, hide after delay.
+  // Keep menu music playing during transition to difficulty screen
+  // (game music will start in startEasyMode)
+
   playTransitionVideo(transitionVideo, () => {
     startScreen.classList.add("hidden");
     difficultyScreen.classList.remove("hidden");
-  }, 1000);  // reveal difficulty 1 second after start
+  }, 1000);
 }
 
 // ---------------------------
 // Difficulty Selection
 // ---------------------------
-
-// Easy → Game transition
 function startEasyMode() {
   const difficultyScreen = document.getElementById("difficulty-screen");
   const hud = document.getElementById("hud");
   const canvas = document.getElementById("gameCanvas");
   const transitionVideo = document.getElementById("difficulty-transition-video");
 
-  // Keep difficulty screen visible during the transition, hide after delay.
   playTransitionVideo(transitionVideo, () => {
     difficultyScreen.classList.add("hidden");
     hud.style.display = "flex";
     canvas.style.display = "block";
 
-    // Load level + start game loop
     Game.loadLevel("../levels/level01.json")
       .then(levelData => {
         console.log("Level loaded successfully:", levelData);
         Game.level = levelData;
         Game.originalTiles = JSON.parse(JSON.stringify(levelData.tiles));
         Game.start();
+
+        // Stop menu music when going into gameplay, then play game music
+        AudioManager.stopMusic();
+        AudioManager.playMusic("assets/audios/game-theme.mp3", true, 0.6);
       })
       .catch(err => {
         console.error("Unexpected error loading level:", err);
         alert("Unable to initialize game. See console for details.");
       });
-  }, 1000); // reveal game screen 1 second after start
+  }, 1000);
 }
 
 // ---------------------------
@@ -108,6 +162,7 @@ function startEasyMode() {
 document.addEventListener("DOMContentLoaded", () => {
   const startBtn = document.getElementById("start-btn");
   const settingsBtn = document.getElementById("settings-btn");
+  const musicBtn = document.getElementById("music-btn"); // NEW button
   const easyBtn = document.getElementById("easy-btn");
   const mediumBtn = document.getElementById("medium-btn");
   const hardBtn = document.getElementById("hard-btn");
@@ -116,6 +171,18 @@ document.addEventListener("DOMContentLoaded", () => {
     console.error("Start button not found!");
     return;
   }
+
+  // Music button toggle
+  if (musicBtn) {
+    musicBtn.addEventListener("click", () => {
+      setMusicEnabled(!musicEnabled);
+    });
+  }
+
+  // Default state loaded from localStorage (fallback to on)
+  const saved = localStorage.getItem("musicEnabled");
+  const shouldPlay = saved === null ? true : saved === "true";
+  setMusicEnabled(shouldPlay);
 
   // Start button → goes to difficulty screen
   startBtn.addEventListener("click", startGameSession);

@@ -10,14 +10,14 @@ let musicEnabled = false;
 const AudioManager = {
   bgMusic: null,
 
-  playMusic(src, loop = true, volume = 0.5) {
+  playMusic(src, loop = true, targetVolume = 0.2, fadeDuration = 5000) {
     if (this.bgMusic) {
       this.bgMusic.pause();
       this.bgMusic = null;
     }
     this.bgMusic = new Audio(src);
     this.bgMusic.loop = loop;
-    this.bgMusic.volume = volume;
+    this.bgMusic.volume = 0; // start silent
 
     const playPromise = this.bgMusic.play();
     if (playPromise !== undefined) {
@@ -25,14 +25,51 @@ const AudioManager = {
         console.warn(`Audio failed to play (${src})`, err);
       });
     }
+
+    // Fade-in effect
+    const steps = 20;
+    const stepTime = fadeDuration / steps;
+    let currentStep = 0;
+
+    const fadeInterval = setInterval(() => {
+      currentStep++;
+      const newVol = (currentStep / steps) * targetVolume;
+      this.bgMusic.volume = Math.min(newVol, targetVolume);
+      if (currentStep >= steps) {
+        clearInterval(fadeInterval);
+      }
+    }, stepTime);
+
     return playPromise;
   },
 
-  stopMusic() {
+  stopMusic(fadeDuration = 1000) {
     if (this.bgMusic) {
-      this.bgMusic.pause();
-      this.bgMusic = null;
+      const steps = 20;
+      const stepTime = fadeDuration / steps;
+      let currentStep = 0;
+      const startVol = this.bgMusic.volume;
+
+      const fadeInterval = setInterval(() => {
+        currentStep++;
+        const newVol = startVol * (1 - currentStep / steps);
+        this.bgMusic.volume = Math.max(newVol, 0);
+        if (currentStep >= steps) {
+          clearInterval(fadeInterval);
+          this.bgMusic.pause();
+          this.bgMusic = null;
+        }
+      }, stepTime);
     }
+  },
+
+  // Sound Effects
+  playSFX(src, volume = 1.0) {
+    const sfx = new Audio(src);
+    sfx.volume = volume;
+    sfx.play().catch(err => {
+      console.warn(`SFX failed to play (${src})`, err);
+    });
   }
 };
 
@@ -42,14 +79,13 @@ function setMusicEnabled(enabled) {
   localStorage.setItem("musicEnabled", enabled ? "true" : "false");
 
   if (enabled) {
-    AudioManager.playMusic("assets/audios/DefaultBgMusic.mp3", true, 0.5);
+    AudioManager.playMusic("assets/audios/DefaultBgMusic.mp3", true, 0.1);
     if (musicBtn) musicBtn.textContent = "🎵 Music On";
   } else {
     AudioManager.stopMusic();
     if (musicBtn) musicBtn.textContent = "🎵 Music Off";
   }
 }
-
 
 // ---------------------------
 // Transition Video Helper
@@ -62,7 +98,7 @@ function playTransitionVideo(videoEl, onComplete, switchDelayMs = 0) {
 
   videoEl.style.display = "block";
   videoEl.currentTime = 0;
-  videoEl.muted = true; // ensure autoplay works across browsers
+  videoEl.muted = true;
 
   const cleanup = () => {
     videoEl.style.display = "none";
@@ -115,8 +151,7 @@ function startGameSession() {
   const difficultyScreen = document.getElementById("difficulty-screen");
   const transitionVideo = document.getElementById("transition-video");
 
-  // Keep menu music playing during transition to difficulty screen
-  // (game music will start in startEasyMode)
+  AudioManager.playSFX("assets/audios/TransitionSwoosh.mp3", 0.8);
 
   playTransitionVideo(transitionVideo, () => {
     startScreen.classList.add("hidden");
@@ -127,11 +162,17 @@ function startGameSession() {
 // ---------------------------
 // Difficulty Selection
 // ---------------------------
+// ---------------------------
+// Easy Mode Start
+// ---------------------------
 function startEasyMode() {
   const difficultyScreen = document.getElementById("difficulty-screen");
   const hud = document.getElementById("hud");
   const canvas = document.getElementById("gameCanvas");
   const transitionVideo = document.getElementById("difficulty-transition-video");
+
+  // Use a longer sound effect for this transition
+  AudioManager.playSFX("assets/audios/TransitionSwooshLong.mp3", 1.0);
 
   playTransitionVideo(transitionVideo, () => {
     difficultyScreen.classList.add("hidden");
@@ -140,18 +181,21 @@ function startEasyMode() {
 
     Game.loadLevel("../levels/level01.json")
       .then(levelData => {
-        console.log("Level loaded successfully:", levelData);
         Game.level = levelData;
         Game.originalTiles = JSON.parse(JSON.stringify(levelData.tiles));
         Game.start();
 
-        // Stop menu music when going into gameplay, then play game music
-        AudioManager.stopMusic();
-        AudioManager.playMusic("assets/audios/game-theme.mp3", true, 0.6);
+        // Fade out the default menu music
+        AudioManager.stopMusic(2000); // fade out over 2 seconds
+
+        // After fade-out completes, fade in Easy mode music
+        setTimeout(() => {
+          AudioManager.playMusic("assets/audios/EasyModeBg.mp3", true, 0.8, 2000);
+        }, 2000);
       })
       .catch(err => {
-        console.error("Unexpected error loading level:", err);
-        alert("Unable to initialize game. See console for details.");
+        console.error("Error loading level:", err);
+        alert("Unable to start Easy mode. Please check console for details.");
       });
   }, 1000);
 }
@@ -162,7 +206,7 @@ function startEasyMode() {
 document.addEventListener("DOMContentLoaded", () => {
   const startBtn = document.getElementById("start-btn");
   const settingsBtn = document.getElementById("settings-btn");
-  const musicBtn = document.getElementById("music-btn"); // NEW button
+  const musicBtn = document.getElementById("music-btn");
   const easyBtn = document.getElementById("easy-btn");
   const mediumBtn = document.getElementById("medium-btn");
   const hardBtn = document.getElementById("hard-btn");
@@ -175,43 +219,54 @@ document.addEventListener("DOMContentLoaded", () => {
   // Music button toggle
   if (musicBtn) {
     musicBtn.addEventListener("click", () => {
+      AudioManager.playSFX("assets/audios/click.wav", 0.6);
       setMusicEnabled(!musicEnabled);
     });
   }
 
-  // Default state loaded from localStorage (fallback to on)
+  // Load saved preference
   const saved = localStorage.getItem("musicEnabled");
   const shouldPlay = saved === null ? true : saved === "true";
   setMusicEnabled(shouldPlay);
 
-  // Start button → goes to difficulty screen
-  startBtn.addEventListener("click", startGameSession);
+  // Start button
+  startBtn.addEventListener("click", () => {
+    AudioManager.playSFX("assets/audios/click.wav", 0.6);
+    startGameSession();
+  });
 
   // Enter key also starts game
   document.addEventListener("keydown", (e) => {
     if (e.key === "Enter" && !document.getElementById("start-screen").classList.contains("hidden")) {
+      AudioManager.playSFX("assets/audios/click.wav", 0.6);
       startGameSession();
     }
   });
 
-  // Settings button placeholder
+  // Settings button
   if (settingsBtn) {
     settingsBtn.addEventListener("click", () => {
+      AudioManager.playSFX("assets/audios/click.wav", 0.6);
       alert("Settings menu coming soon!");
     });
   }
 
   // Difficulty buttons
   if (easyBtn) {
-    easyBtn.addEventListener("click", startEasyMode);
+    easyBtn.addEventListener("click", () => {
+      AudioManager.playSFX("assets/audios/click.wav", 0.6);
+      startEasyMode();
+    });
   }
   if (mediumBtn) {
     mediumBtn.addEventListener("click", () => {
+      AudioManager.playSFX("assets/audios/click.wav", 0.6);
       alert("Medium difficulty coming soon!");
     });
   }
   if (hardBtn) {
     hardBtn.addEventListener("click", () => {
+      AudioManager.playSFX("assets/audios/click.wav", 0.6);
       alert("Hard difficulty coming soon!");
     });
   }
@@ -221,6 +276,7 @@ document.addEventListener("DOMContentLoaded", () => {
     if (e.key === "Escape") {
       const pauseMenu = document.getElementById("pause-menu");
       if (pauseMenu) {
+        AudioManager.playSFX("assets/audios/click.wav", 0.6);
         pauseMenu.classList.toggle("hidden");
       }
     }
@@ -230,6 +286,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const resumeBtn = document.getElementById("resume-btn");
   if (resumeBtn) {
     resumeBtn.addEventListener("click", () => {
+      AudioManager.playSFX("assets/audios/click.wav", 0.6);
       document.getElementById("pause-menu").classList.add("hidden");
     });
   }
@@ -238,6 +295,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const quitBtn = document.getElementById("quit-btn");
   if (quitBtn) {
     quitBtn.addEventListener("click", () => {
+      AudioManager.playSFX("assets/audios/click.wav", 0.6);
       alert("Quit to main menu coming soon!");
     });
   }
